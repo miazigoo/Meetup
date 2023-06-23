@@ -2,7 +2,7 @@ from telegram import ParseMode, InlineKeyboardMarkup, Update, ReplyKeyboardRemov
 from telegram.ext import ConversationHandler
 
 from bot_meetup.keyboards.keyboards import get_keyboard_start
-
+from bot_meetup.models import Client
 
 START_TEXT = "Вас приветствует Сервис PythonMeetup"
 
@@ -19,13 +19,17 @@ def start_conversation(update: Update, context):
             parse_mode=ParseMode.HTML
         )
     else:
-        # --------------------------------
         chat_id = update.message.chat_id
         nickname = update.message.from_user.username
-        context.user_data['chat_id'] = chat_id
-        context.user_data['nickname'] = nickname
+        # --------------------------------
         # Добавление в БД Юзера
         # --------------------------------
+        Client.objects.get_or_create(
+            telegram_id=chat_id,
+            defaults={
+                'nik_name': nickname
+            }
+        )
         update.message.reply_text(
             text=f"{START_TEXT}\nВыберете интересующий вас вопрос", reply_markup=reply_markup,
             parse_mode=ParseMode.HTML
@@ -35,7 +39,7 @@ def start_conversation(update: Update, context):
 
 
 def cancel(update, _):
-    user = update.message.from_user
+    # user = update.message.from_user
     # logger.info("Пользователь %s отменил разговор.", user.first_name)
     update.message.reply_text(
         'До новых встреч',

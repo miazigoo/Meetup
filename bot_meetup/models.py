@@ -39,7 +39,7 @@ class Speaker(models.Model):
 
 class Topic(models.Model):
     speaker = models.ManyToManyField(Speaker)
-    topic = models.CharField(
+    title = models.CharField(
         max_length=256,
         null=True,
         blank=False,
@@ -47,11 +47,20 @@ class Topic(models.Model):
     )
 
     def __str__(self):
-        return f"{self.topic}"
+        return f"{self.title}"
 
     class Meta:
         verbose_name = "Тема"
         verbose_name_plural = "Темы"
+
+
+class EventQuerySet(models.QuerySet):
+
+    def get_or_none(self, *args, **kwargs):
+        try:
+            return self.get(*args, **kwargs)
+        except Event.DoesNotExist:
+            return None
 
 
 class Event(models.Model):
@@ -64,6 +73,8 @@ class Event(models.Model):
     text = models.TextField()
     speaker = models.ManyToManyField(Speaker)
     topic = models.ManyToManyField(Topic)
+
+    objects = EventQuerySet.as_manager()
 
     def __str__(self):
         return f"{self.title}"
